@@ -110,6 +110,80 @@ Mounted under `/api/v1`:
 - `src/app/alerts/page.tsx` — Alert management UI
 - `src/app/admin/page.tsx` — Admin dashboard with scrape logs
 
+## Running the Application
+
+### Option 1: Docker Compose (Recommended)
+
+```bash
+docker compose -f docker/docker-compose.yml up -d --build
+```
+
+This starts PostgreSQL 16, Redis 7, backend API (FastAPI on :8000), Celery worker + beat, frontend (Next.js on :3000), and Nginx reverse proxy on port 80.
+
+The app is accessible at **http://localhost** (via Nginx).
+
+### Option 2: Backend only (native Python)
+
+```bash
+cd backend
+pip install -r requirements.txt
+alembic upgrade head
+uvicorn app.main:app --reload
+```
+
+Requires PostgreSQL and Redis running separately.
+
+### Option 3: Both native
+
+```bash
+# Terminal 1
+cd backend && uvicorn app.main:app --reload
+
+# Terminal 2
+cd frontend && npm install && npm run dev
+```
+
+## Seed Data
+
+```bash
+# Via Docker
+docker compose -f docker/docker-compose.yml exec backend python scripts/seed_stores.py
+
+# Native
+python scripts/seed_stores.py
+```
+
+## Tests
+
+```bash
+cd backend
+pytest tests/ -v
+```
+
+---
+
+## Git History
+
+- `111c8ab` — Initial commit: project documentation (README, PLAN, ARCHITECTURE, API, DATABASE, SCRAPER_GUIDE)
+- `6edfc50` — `feat: initial application scaffold` — Full application code (84 files, 3288 lines)
+
+---
+
+## What's Next (Planned Phases)
+
+| Phase | Component | Status |
+|---|---|---|
+| 1 | Project setup, backend core, models, API, frontend scaffold | ✅ Complete |
+| 2 | Lenovo scraper implementation (Playwright) | ⏳ Pending |
+| 3 | Asus scraper implementation | ⏳ Pending |
+| 4 | Scheduler + Celery tasks | ⏳ Pending |
+| 5 | Authentication (Google, GitHub, Email) | ⏳ Pending |
+| 6 | Notification channels (Telegram, Discord, Slack, Email, Push) | ⏳ Pending |
+| 7 | Analytics dashboard, ML price predictions | ⏳ Pending |
+| 8 | Mobile app / PWA | ⏳ Pending |
+
+---
+
 ## Notable Design Decisions
 
 1. **Async everywhere** — Backend uses `async/await` throughout. SQLAlchemy async sessions, httpx async client, async scrapers. No blocking calls.

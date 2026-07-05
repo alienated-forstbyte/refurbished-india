@@ -1,16 +1,41 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import SearchBar from "@/components/SearchBar";
 import StatsCards from "@/components/StatsCards";
 import ProductCard from "@/components/ProductCard";
-import { getStats, getProducts } from "@/lib/api";
+import type { Product, Stats } from "@/types";
 
-export default async function HomePage() {
-  let stats = null;
-  let featured = [];
-  try {
-    stats = await getStats();
-    featured = (await getProducts({ sort: "updated", limit: 8 })).products;
-  } catch {
-    // API may not be available yet
+export default function HomePage() {
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [featured, setFeatured] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { getStats, getProducts } = await import("@/lib/api");
+        const [s, p] = await Promise.all([
+          getStats(),
+          getProducts({ sort: "updated", limit: 8 }),
+        ]);
+        setStats(s);
+        setFeatured(p.products);
+      } catch {
+        // API may not be available yet
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-12 text-center text-gray-400">
+        Loading...
+      </div>
+    );
   }
 
   return (
@@ -42,7 +67,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {!stats && (
+      {!stats && !loading && (
         <section className="text-center text-gray-400 text-sm">
           Waiting for data... Start the scraper to populate the database.
         </section>

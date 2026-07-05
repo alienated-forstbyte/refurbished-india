@@ -11,17 +11,19 @@ from app.models.store import Store
 from app.database import Base
 
 STORES = [
-    {"name": "Lenovo Refurbished", "website": "https://www.lenovorefurbished.in", "country": "IN", "scrape_interval": 60},
-    {"name": "Asus Refurbished", "website": "https://www.asusrefurbished.in", "country": "IN", "scrape_interval": 60},
-    {"name": "Dell Outlet", "website": "https://www.delloutlet.in", "country": "IN", "scrape_interval": 60},
-    {"name": "HP Renew", "website": "https://www.hprenew.in", "country": "IN", "scrape_interval": 60},
-    {"name": "Amazon Renewed", "website": "https://www.amazon.in/renewed", "country": "IN", "scrape_interval": 120},
-    {"name": "Flipkart Refurbished", "website": "https://www.flipkart.com/refurbished", "country": "IN", "scrape_interval": 120},
+    {"name": "Reboot Estore", "website": "https://estore.reboot.co.in", "country": "IN", "scrape_interval": 60},
+    {"name": "EPW India", "website": "https://www.epwindia.com", "country": "IN", "scrape_interval": 60},
+    {"name": "e-furbished", "website": "https://e-furbished.in", "country": "IN", "scrape_interval": 60},
     {"name": "Cashify", "website": "https://www.cashify.in", "country": "IN", "scrape_interval": 120},
+    {"name": "Refurbr", "website": "https://www.refurbr.in", "country": "IN", "scrape_interval": 60},
+    {"name": "EzyRefurb", "website": "https://www.ezyrefurb.com", "country": "IN", "scrape_interval": 60},
+    {"name": "Amazon Renewed", "website": "https://www.amazon.in/renewed", "country": "IN", "scrape_interval": 120},
 ]
 
 
 async def seed():
+    from sqlalchemy import text
+
     engine = create_async_engine(settings.database_url)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -29,9 +31,20 @@ async def seed():
     factory = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     async with factory() as session:
         for store_data in STORES:
-            session.add(Store(**store_data))
+            await session.execute(
+                text("""
+                    INSERT INTO stores (name, website, country, enabled, scrape_interval)
+                    VALUES (:name, :website, :country, :enabled, :scrape_interval)
+                    ON CONFLICT (name) DO UPDATE SET
+                        website = EXCLUDED.website,
+                        country = EXCLUDED.country,
+                        enabled = EXCLUDED.enabled,
+                        scrape_interval = EXCLUDED.scrape_interval
+                """),
+                {**store_data, "enabled": True},
+            )
         await session.commit()
-        print(f"Seeded {len(STORES)} stores")
+        print(f"Seeded/updated {len(STORES)} stores")
 
     await engine.dispose()
 

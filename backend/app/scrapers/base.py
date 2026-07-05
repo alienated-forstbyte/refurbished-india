@@ -1,7 +1,7 @@
 import asyncio
 import random
 import logging
-from abc import ABC, abstractmethod
+from abc import ABC
 from dataclasses import dataclass, field
 
 logger = logging.getLogger(__name__)
@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ProductSchema:
-    store_id: int
+    store_id: int | None = None
     brand: str | None = None
     model: str | None = None
     product_name: str | None = None
@@ -45,9 +45,12 @@ class BaseScraper(ABC):
     name: str = "base"
     rate_limit: float = 1.0
     max_retries: int = 3
+    store_id: int | None = None
 
-    def __init__(self):
+    def __init__(self, store_id: int | None = None):
         self._last_request_time: float = 0.0
+        if store_id is not None:
+            self.store_id = store_id
 
     async def rate_limit_wait(self):
         now = asyncio.get_event_loop().time()
@@ -64,17 +67,14 @@ class BaseScraper(ABC):
             "Accept-Language": "en-IN,en;q=0.9,hi;q=0.8",
         }
 
-    @abstractmethod
     async def discover_products(self) -> list[str]:
-        pass
+        return []
 
-    @abstractmethod
     async def fetch_product(self, url: str) -> str:
-        pass
+        return ""
 
-    @abstractmethod
     async def normalize(self, raw_data: str, url: str) -> ProductSchema | None:
-        pass
+        return None
 
     async def save(self, product: ProductSchema):
         pass  # Implemented by services, not scrapers

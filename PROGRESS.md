@@ -177,8 +177,8 @@ pytest tests/ -v
 | 2 | Lenovo scraper implementation (Playwright) | ⏳ Pending |
 | 3 | Asus scraper implementation | ⏳ Pending |
 | 4 | Scheduler + Celery tasks | ⏳ Pending |
-| 5 | Authentication (Google, GitHub, Email) | ⏳ Pending |
-| 6 | Notification channels (Telegram, Discord, Slack, Email, Push) | ⏳ Pending |
+| 5 | Authentication (register, login, JWT, get_current_user) | ✅ Complete |
+| 6 | Notification pipeline wired into Celery tasks (change detection → user alerts → notify) | ✅ Complete |
 | 7 | Analytics dashboard, ML price predictions | ⏳ Pending |
 | 8 | Mobile app / PWA | ⏳ Pending |
 

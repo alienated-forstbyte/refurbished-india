@@ -60,8 +60,11 @@ Mounted under `/api/v1`:
 
 ### Scrapers
 
-- `base.py` — Abstract `BaseScraper` with interface: `discover_products()`, `fetch_product()`, `normalize()`, `save()`. Retry logic (3 attempts), error handling, rate limiting (1 req/s), random delays, User-Agent rotation.
-- `lenovo.py`, `asus.py`, `dell.py`, `hp.py` — Store-specific scrapers. Each implements the base interface. Lenovo uses Playwright for JS-heavy pages. Asus handles hidden products via direct URL discovery. Dell and HP follow their respective site patterns. All normalize into the common `ProductSchema`.
+- `base.py` — Abstract `BaseScraper` with interface: `scrape_all()`, `discover_products()`, `fetch_product()`, `normalize()`, `save()`. Retry logic (3 attempts), error handling, rate limiting (1 req/s), random delays, User-Agent rotation.
+- `cashify.py` — Fully functional Cashify scraper. Extracts product data from Next.js RSC push payloads. Parses brand, CPU, RAM, storage, display size from product names. Covers all brand category pages.
+- `shopify_base.py` — Base class for Shopify stores. Uses `/products.json` API with pagination. Extracts variants, images, HTML specs. 360 lines. Extended by Reboot, EPW India, e-furbished, EzyRefurb.
+- `reboot.py`, `epw.py`, `efurbished.py`, `ezyrefurb.py` — Shopify store scrapers. Minimal (extend `ShopifyBaseScraper` with just `shop_domain`). EPW adds laptop-only filtering.
+- `lenovo.py`, `asus.py`, `dell.py`, `hp.py` — Store-specific scrapers (stubs). Each implements the base interface but `discover_products()` returns `[]` and `normalize()` returns `None`. Needs implementation.
 
 ### Services
 
@@ -172,15 +175,19 @@ pytest tests/ -v
 ## What's Next (Planned Phases)
 
 | Phase | Component | Status |
-|---|---|---|
+|---|---|---|---|
 | 1 | Project setup, backend core, models, API, frontend scaffold | ✅ Complete |
-| 2 | Lenovo scraper implementation (Playwright) | ⏳ Pending |
-| 3 | Asus scraper implementation | ⏳ Pending |
-| 4 | Scheduler + Celery tasks | ⏳ Pending |
+| 2 | Cashify scraper (full implementation, RSC data extraction) | ✅ Complete |
+| 3 | Shopify-based scrapers (Reboot Estore, EPW India, e-furbished, EzyRefurb) | ✅ Complete |
+| 4 | Scheduler + Celery tasks (hourly beat, change detection, notifications) | ✅ Complete |
 | 5 | Authentication (register, login, JWT, get_current_user) | ✅ Complete |
 | 6 | Notification pipeline wired into Celery tasks (change detection → user alerts → notify) | ✅ Complete |
-| 7 | Analytics dashboard, ML price predictions | ⏳ Pending |
-| 8 | Mobile app / PWA | ⏳ Pending |
+| 7 | Lenovo scraper (Playwright needed) | ⏳ Stub |
+| 8 | Asus scraper (httpx needed) | ⏳ Stub |
+| 9 | Dell scraper (Dell Outlet) | ⏳ Stub |
+| 10 | HP scraper (HP Renew) | ⏳ Stub |
+| 11 | Analytics dashboard, ML price predictions | ⏳ Pending |
+| 12 | Mobile app / PWA | ⏳ Pending |
 
 ---
 

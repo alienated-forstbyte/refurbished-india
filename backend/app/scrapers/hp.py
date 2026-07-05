@@ -8,8 +8,7 @@ class HPRefurbScraper(BaseScraper):
     name = "hp_renew"
 
     async def discover_products(self) -> list[str]:
-        # TODO: Implement HP Renew discovery
-        logger.info("[hp_renew] discover_products not yet implemented")
+        logger.info("[hp_renew] Stub — needs HP Renew discovery implementation")
         return []
 
     async def fetch_product(self, url: str) -> str:

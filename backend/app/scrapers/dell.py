@@ -8,8 +8,7 @@ class DellScraper(BaseScraper):
     name = "dell"
 
     async def discover_products(self) -> list[str]:
-        # TODO: Implement Dell Outlet discovery
-        logger.info("[dell] discover_products not yet implemented")
+        logger.info("[dell] Stub — needs Dell Outlet discovery implementation")
         return []
 
     async def fetch_product(self, url: str) -> str:

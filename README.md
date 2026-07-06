@@ -8,9 +8,7 @@ Buying refurbished laptops in India is surprisingly difficult.
 
 Every manufacturer has their own store with different layouts, filtering capabilities, stock indicators, and search functionality.
 
-Some stores, such as Lenovo Refurbished, contain hundreds of products but do not provide an easy way to filter out out-of-stock devices.
-
-Others, like Asus Refurbished, expose only a subset of products while additional products remain accessible through direct URLs.
+Some stores contain hundreds of products but do not provide an easy way to filter out out-of-stock devices. Others expose only a subset of products while additional products remain accessible through direct URLs.
 
 The goal of this project is to build a single application that continuously collects product information from multiple refurbished laptop stores and presents it in a clean searchable interface.
 
@@ -30,24 +28,55 @@ Instead of manually checking multiple websites every day, users can search once 
 
 ---
 
-# Supported Stores (Planned)
+# Supported Stores
 
-## OEM Stores
+## Functional (scraping live data)
 
-- Lenovo Refurbished
-- Asus Refurbished
-- Dell Outlet
-- HP Renew
+| Store | Type | Products |
+|---|---|---|
+| Cashify | Custom (RSC push data) | 60+ |
+| Reboot Estore | Shopify | ~100 |
+| EPW India | Shopify | ~100 |
+| e-furbished | Shopify | ~100 |
+| EzyRefurb | Shopify | 102 |
+| Lenovo Outlet | Lenovo API | 49 |
+| **Total** | **6 stores** | **623+** |
 
-## Marketplaces
+## Stubs (need implementation)
 
-- Amazon Renewed
-- Flipkart Refurbished
-- Cashify
-- Electronics Bazaar
-- Other Indian refurbishers
+| Store | Notes |
+|---|---|
+| Asus Refurbished | httpx + direct URL discovery |
+| Dell Outlet | Dell Outlet scraping |
+| HP Renew | HP Renew scraping |
+| Refurbr | No scraper exists |
+| Amazon Renewed | No scraper exists |
+| Flipkart Refurbished | Planned |
 
-The architecture should make adding new stores simple.
+The architecture makes adding new stores simple — implement one scraper class, add the store to the DB, and register it in `SCRAPER_MAP`.
+
+---
+
+# Quick Start
+
+```bash
+docker compose -f docker/docker-compose.yml up -d --build
+```
+
+Access:
+- **Frontend**: http://localhost:3001
+- **API**: http://localhost:8001/api/v1
+- **Nginx (combined)**: http://localhost:8080
+
+Seed sample data:
+```bash
+docker cp scripts/seed_stores.py docker-backend-1:/app/ && docker cp scripts/seed_sample_data.py docker-backend-1:/app/ && docker compose exec backend python seed_stores.py && docker compose exec backend python seed_sample_data.py
+```
+
+Trigger scrapers:
+```bash
+docker compose exec backend python -c "from app.tasks import scrape_all_stores; scrape_all_stores.delay()"
+```
 
 ---
 
@@ -56,8 +85,6 @@ The architecture should make adding new stores simple.
 ## Product Aggregation
 
 Every product is normalized into a common format regardless of source.
-
-Example
 
 - Brand
 - Model
@@ -77,13 +104,7 @@ Example
 
 ## Search
 
-Search by
-
-- ThinkPad
-- Legion
-- Vivobook
-- Latitude
-- EliteBook
+Search by brand, model, CPU, or keywords.
 
 Supports partial matching.
 
@@ -92,29 +113,22 @@ Supports partial matching.
 ## Filters
 
 ### Availability
-
-- In Stock
-- Out of Stock
+- In Stock / Out of Stock
 
 ### Price
-
-Minimum and maximum
+- Minimum and maximum
 
 ### Hardware
-
-- CPU Generation
-- Intel
-- AMD
+- CPU Generation (Intel / AMD)
 - RAM
 - SSD
 - GPU
 - Screen Size
 
 ### Business
-
 - Warranty
-- Grade
-- Seller
+- Condition
+- Store/Seller
 
 ---
 
@@ -131,8 +145,7 @@ Minimum and maximum
 
 ## Product History
 
-Each product stores
-
+Each product stores:
 - Price history
 - Availability history
 - Last checked
@@ -142,27 +155,18 @@ Each product stores
 
 ## Alerts
 
-Example
+Example: "Notify me when ThinkPad T14 — Price below ₹55,000 — In Stock"
 
-Notify me when
-
-- ThinkPad T14
-- Price below ₹55,000
-- In Stock
-
-Supported notifications
-
+Supported channels:
 - Email
 - Telegram
 - Discord
 - Slack
-- Web Push
+- Web Push (planned)
 
 ---
 
 ## Dashboard
-
-The web interface provides
 
 - Global search
 - Filters
@@ -176,56 +180,25 @@ The web interface provides
 # Technology Stack
 
 ## Backend
-
-Python
-
-FastAPI
-
-SQLAlchemy
-
-PostgreSQL
-
-Redis
-
-Celery
-
-Playwright
-
-BeautifulSoup
-
-HTTPX
-
----
+- Python / FastAPI
+- SQLAlchemy 2.0 (async) + asyncpg
+- PostgreSQL 16
+- Redis 7
+- Celery
+- httpx
+- Playwright
 
 ## Frontend
-
-Next.js
-
-React
-
-TypeScript
-
-TailwindCSS
-
-TanStack Table
-
-Chart.js
-
----
+- Next.js 14 (App Router)
+- React / TypeScript
+- TailwindCSS
+- TanStack Table
+- Chart.js
 
 ## Infrastructure
-
-Docker
-
-Docker Compose
-
-GitHub Actions
-
-PostgreSQL
-
-Redis
-
-Nginx
+- Docker / Docker Compose
+- Nginx reverse proxy
+- GitHub Actions CI/CD
 
 ---
 
@@ -233,29 +206,21 @@ Nginx
 
 ```
 refurbhub/
-
-backend/
+  backend/
     app/
-    scrapers/
-    api/
-    models/
-    services/
-
-frontend/
-
-database/
-
-docker/
-
-docs/
-
-scripts/
-
-tests/
-
-README.md
-
-PLAN.md
+      scrapers/     # Store-specific scrapers
+      api/          # REST API endpoints
+      models/       # SQLAlchemy models
+      services/     # Scheduler, normalizer, notifier
+    alembic/        # DB migrations
+  frontend/
+    src/
+      app/          # Next.js pages
+      components/   # Reusable UI components
+      lib/          # API client
+  docker/           # Docker Compose + nginx config
+  scripts/          # Seed data, DB init
+  tests/
 ```
 
 ---
@@ -263,35 +228,26 @@ PLAN.md
 # Data Flow
 
 ```
-Scheduler
-
-↓
-
-Store Scrapers
-
-↓
-
-Normalizer
-
-↓
-
-Database
-
-↓
-
-REST API
-
-↓
-
-Frontend
+Scheduler (Celery Beat)
+    ↓
+Store Scrapers (httpx / Shopify API / Playwright)
+    ↓
+Normalizer (common ProductSchema)
+    ↓
+Change Detection (diff against DB)
+    ↓
+Database (PostgreSQL)
+    ↓
+REST API (FastAPI, async)
+    ↓
+Frontend (Next.js, client-side fetch)
 ```
 
 ---
 
 # Why This Exists
 
-Current refurbished laptop stores suffer from several problems
-
+Current refurbished laptop stores suffer from several problems:
 - Poor search
 - Poor filtering
 - Hidden inventory
@@ -305,6 +261,4 @@ This project solves all of these.
 
 # Current Status
 
-Project is currently in planning.
-
-See PLAN.md for implementation roadmap.
+**Active development.** 6 functional scrapers, 8 stores in DB, 623+ products tracked. Backend API and frontend scaffold are complete. See PROGRESS.md for detailed status.

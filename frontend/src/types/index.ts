@@ -1,6 +1,8 @@
 export interface Product {
   id: number;
   store_id: number;
+  deal_score: number | null;
+  store_name: string | null;
   brand: string | null;
   model: string | null;
   product_name: string | null;

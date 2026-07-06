@@ -15,8 +15,12 @@ STORES = [
     {"name": "EPW India", "website": "https://www.epwindia.com", "country": "IN", "scrape_interval": 60},
     {"name": "e-furbished", "website": "https://e-furbished.in", "country": "IN", "scrape_interval": 60},
     {"name": "Cashify", "website": "https://www.cashify.in", "country": "IN", "scrape_interval": 120},
-    {"name": "Refurbr", "website": "https://www.refurbr.in", "country": "IN", "scrape_interval": 60},
     {"name": "EzyRefurb", "website": "https://www.ezyrefurb.com", "country": "IN", "scrape_interval": 60},
+    {"name": "Lenovo Outlet", "website": "https://www.lenovo.com/in/outletin/en", "country": "IN", "scrape_interval": 120},
+    {"name": "Asus Outlet", "website": "https://www.asus.com/in/deals/outlet/", "country": "IN", "scrape_interval": 120},
+    {"name": "Dell Outlet", "website": "https://outlet.us.dell.com", "country": "IN", "scrape_interval": 120},
+    {"name": "HP Renew", "website": "https://www.hp.com/in-en/services/workforce-solutions/workforce-computing/renew-solutions/refurbished-hardware.html", "country": "IN", "scrape_interval": 120},
+    {"name": "Refurbr", "website": "https://www.refurbr.in", "country": "IN", "scrape_interval": 60},
     {"name": "Amazon Renewed", "website": "https://www.amazon.in/renewed", "country": "IN", "scrape_interval": 120},
 ]
 

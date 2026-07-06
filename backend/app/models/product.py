@@ -30,6 +30,8 @@ class Product(Base):
     discount: Mapped[float | None] = mapped_column(Float, nullable=True)
     currency: Mapped[str] = mapped_column(String(8), default="INR")
 
+    deal_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+
     stock_status: Mapped[str] = mapped_column(String(32), default="unknown")
     product_url: Mapped[str | None] = mapped_column(Text, nullable=True)
     image_url: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -50,4 +52,5 @@ class Product(Base):
         Index("ix_products_model", "model"),
         Index("ix_products_cpu_generation", "cpu_generation"),
         Index("ix_products_last_seen", "last_seen"),
+        Index("ix_products_deal_score", "deal_score"),
     )

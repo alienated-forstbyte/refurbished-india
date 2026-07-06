@@ -12,6 +12,9 @@ export default function Navbar() {
             <Link href="/products" className="hover:text-primary-600 transition">
               Products
             </Link>
+            <Link href="/deals" className="hover:text-primary-600 transition">
+              Deals
+            </Link>
             <Link href="/compare" className="hover:text-primary-600 transition">
               Compare
             </Link>

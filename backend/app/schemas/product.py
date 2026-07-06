@@ -28,6 +28,8 @@ class ProductCreate(BaseModel):
 
 class ProductResponse(ProductCreate):
     id: int
+    deal_score: float | None = None
+    store_name: str | None = None
     first_seen: datetime.datetime
     last_seen: datetime.datetime
     last_updated: datetime.datetime

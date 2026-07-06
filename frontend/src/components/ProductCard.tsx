@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Product } from "@/types";
 import StockBadge from "./StockBadge";
 import DiscountBadge from "./DiscountBadge";
@@ -8,9 +7,14 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const Wrapper = product.product_url ? "a" : "div";
+  const wrapperProps = product.product_url
+    ? { href: product.product_url, target: "_blank", rel: "noopener noreferrer" }
+    : {};
+
   return (
-    <Link
-      href={`/product/${product.id}`}
+    <Wrapper
+      {...(wrapperProps as any)}
       className="block bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow"
     >
       <div className="aspect-video bg-gray-100 rounded-t-lg flex items-center justify-center overflow-hidden">
@@ -23,8 +27,26 @@ export default function ProductCard({ product }: ProductCardProps) {
       <div className="p-4 space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-gray-500 uppercase">{product.brand || "Unknown"}</span>
-          <StockBadge status={product.stock_status} />
+          <StockBadge status={product.stock_status} lastSeen={product.last_seen} />
         </div>
+        {(product.store_name || product.deal_score != null) && (
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-gray-400">{product.store_name || ""}</span>
+            {product.deal_score != null && (
+              <span
+                className={`text-xs font-semibold px-1.5 py-0.5 rounded ${
+                  product.deal_score >= 70
+                    ? "bg-green-100 text-green-700"
+                    : product.deal_score >= 50
+                      ? "bg-yellow-100 text-yellow-700"
+                      : "bg-gray-100 text-gray-500"
+                }`}
+              >
+                {product.deal_score >= 70 ? "Hot Deal" : product.deal_score >= 50 ? "Good Deal" : "Fair"}
+              </span>
+            )}
+          </div>
+        )}
         <h3 className="font-medium text-sm line-clamp-2">{product.product_name || "Unknown Product"}</h3>
         <div className="flex items-baseline gap-2">
           <span className="text-lg font-bold">₹{product.price?.toLocaleString("en-IN")}</span>
@@ -39,6 +61,6 @@ export default function ProductCard({ product }: ProductCardProps) {
           {product.storage_gb && <span>{product.storage_gb}GB</span>}
         </div>
       </div>
-    </Link>
+    </Wrapper>
   );
 }

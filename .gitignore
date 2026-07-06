@@ -44,7 +44,27 @@ ms-playwright/
 # Alembic
 *.sqlite3
 
+# Caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+
 # Coverage
 htmlcov/
 .coverage
+.coverage.*
 coverage/
+
+# Celery
+celerybeat-schedule*
+celerybeat.pid
+
+# Redis
+*.rdb
+
+# Misc
+*.pid
+*.whl
+__pypackages__/

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
 import FilterPanel from "@/components/FilterPanel";
 import SearchBar from "@/components/SearchBar";
@@ -9,8 +9,9 @@ import type { ProductList } from "@/types";
 
 export default function ProductListClient() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [data, setData] = useState<ProductList | null>(null);
-  const [page, setPage] = useState(1);
+  const page = Number(searchParams.get("page")) || 1;
 
   const fetchProducts = async () => {
     const { getProducts, searchProducts } = await import("@/lib/api");
@@ -21,16 +22,10 @@ export default function ProductListClient() {
         setData(result);
       } else {
         const params: Record<string, string | number> = { page, limit: 24 };
-        const brand = searchParams.get("brand");
-        const stock = searchParams.get("stock");
-        const priceMin = searchParams.get("price_min");
-        const priceMax = searchParams.get("price_max");
-        const ram = searchParams.get("ram");
-        if (brand) params.brand = brand;
-        if (stock) params.stock = stock;
-        if (priceMin) params.price_min = priceMin;
-        if (priceMax) params.price_max = priceMax;
-        if (ram) params.ram = Number(ram);
+        for (const key of ["brand", "stock", "price_min", "price_max", "ram", "cpu", "gpu", "sort", "storage_min", "storage_max", "storage_type", "display_size_min", "display_size_max", "condition", "cpu_generation", "store_id", "warranty_min"]) {
+          const val = searchParams.get(key);
+          if (val) params[key] = key === "sort" || key === "storage_type" || key === "condition" || key === "cpu_generation" || key === "brand" || key === "stock" || key === "cpu" || key === "gpu" ? val : Number(val);
+        }
         const result = await getProducts(params);
         setData(result);
       }
@@ -41,9 +36,26 @@ export default function ProductListClient() {
 
   useEffect(() => {
     fetchProducts();
-  }, [searchParams, page]);
+  }, [searchParams]);
 
   const totalPages = data ? Math.ceil(data.total / data.limit) : 0;
+
+  const currentSort = searchParams.get("sort") || "";
+
+  const setSort = (sort: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("page");
+    if (sort) params.set("sort", sort);
+    else params.delete("sort");
+    router.push(`/products?${params}`);
+  };
+
+  const sortOptions = [
+    { value: "deal_score_desc", label: "Best Deals" },
+    { value: "price_asc", label: "Price: Low to High" },
+    { value: "price_desc", label: "Price: High to Low" },
+    { value: "discount_desc", label: "Discount: High to Low" },
+  ];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -54,10 +66,25 @@ export default function ProductListClient() {
         <FilterPanel />
       </aside>
       <main className="lg:col-span-3">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <span className="text-sm text-gray-500">
             {data ? `${data.total} products found` : "Loading..."}
           </span>
+          <div className="flex gap-1">
+            {sortOptions.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setSort(opt.value)}
+                className={`px-3 py-1.5 text-xs rounded border transition ${
+                  currentSort === opt.value
+                    ? "bg-primary-600 text-white border-primary-600"
+                    : "bg-white text-gray-600 border-gray-300 hover:border-gray-400"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {data?.products.map((p) => (
@@ -68,7 +95,11 @@ export default function ProductListClient() {
           <div className="flex justify-center gap-2 mt-8">
             <button
               disabled={page <= 1}
-              onClick={() => setPage((p) => p - 1)}
+              onClick={() => {
+                const p = new URLSearchParams(searchParams.toString());
+                p.set("page", String(page - 1));
+                router.push(`/products?${p}`);
+              }}
               className="px-4 py-2 border rounded text-sm disabled:opacity-40"
             >
               Previous
@@ -78,7 +109,11 @@ export default function ProductListClient() {
             </span>
             <button
               disabled={page >= totalPages}
-              onClick={() => setPage((p) => p + 1)}
+              onClick={() => {
+                const p = new URLSearchParams(searchParams.toString());
+                p.set("page", String(page + 1));
+                router.push(`/products?${p}`);
+              }}
               className="px-4 py-2 border rounded text-sm disabled:opacity-40"
             >
               Next

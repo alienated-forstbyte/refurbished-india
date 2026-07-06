@@ -19,11 +19,16 @@ from app.scrapers import (
     EFurbishedScraper,
     CashifyScraper,
     EzyRefurbScraper,
+    LenovoScraper,
+    AsusScraper,
+    DellScraper,
+    HPRefurbScraper,
 )
 from app.scrapers.base import ProductSchema
 from app.services.normalizer import ProductNormalizer
 from app.services.change_detector import ChangeDetector, ChangeEvent
 from app.services.notifier import Notifier
+from app.services.deal_scorer import refresh_deal_scores
 from app.models.alert import Alert
 from app.models.notification_history import NotificationHistory
 
@@ -45,6 +50,10 @@ celery_app.conf.update(
             "task": "app.tasks.scrape_all_stores",
             "schedule": settings.scheduler_interval_minutes * 60,
         },
+        "refresh-deal-scores": {
+            "task": "app.tasks.refresh_deal_scores_task",
+            "schedule": 1800,
+        },
     },
 )
 
@@ -54,6 +63,10 @@ SCRAPER_MAP: dict[str, type] = {
     "e-furbished": EFurbishedScraper,
     "Cashify": CashifyScraper,
     "EzyRefurb": EzyRefurbScraper,
+    "Lenovo Outlet": LenovoScraper,
+    "Asus Outlet": AsusScraper,
+    "Dell Outlet": DellScraper,
+    "HP Renew": HPRefurbScraper,
 }
 
 normalizer = ProductNormalizer()
@@ -327,5 +340,14 @@ def scrape_store(store_name: str):
             return
 
         await _run_scraper_for_store(scraper_cls, store.id, store.name)
+
+    asyncio.run(_run())
+
+
+@celery_app.task
+def refresh_deal_scores_task():
+    async def _run():
+        async with async_session_factory() as session:
+            await refresh_deal_scores(session)
 
     asyncio.run(_run())
